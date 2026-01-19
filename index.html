@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Spectral Blackjack</title>
+    <link rel="stylesheet" href="css/style.css?v=4.34">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Top HUD -->
+        <header class="hud-header">
+            <div class="currency-display chip-display">
+                <i class="fa-solid fa-coins"></i>
+                <span id="chip-balance">1000</span>
+            </div>
+            <div class="currency-display gem-display" onclick="ui.toggleShop(true)">
+                <i class="fa-regular fa-gem"></i>
+                <span id="gem-balance">0</span>
+                <div class="plus-icon"><i class="fa-solid fa-plus"></i></div>
+            </div>
+        </header>
+
+        <!-- Main Game Area -->
+        <main class="game-table">
+            <div id="dealer-area" class="hand-area">
+                <div class="hand-score hidden" id="dealer-score">0</div>
+                <div class="cards-container" id="dealer-cards">
+                    <!-- Cards injected here -->
+                </div>
+            </div>
+
+            <div id="bet-stack-container" class="bet-stack">
+                <!-- Visual chips injected here -->
+            </div>
+
+            <div id="message-display" class="message hidden">Blackjack!</div>
+
+            <div id="player-area" class="hand-area">
+                <div class="hand-score hidden" id="player-score">0</div>
+                <div class="cards-container" id="player-cards">
+                    <!-- Cards injected here -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Controls -->
+        <footer class="game-controls">
+            <!-- Betting Controls -->
+            <div id="betting-controls" class="control-group">
+                <!-- Chip Rack (Betting Logic) -->
+                <div class="bet-adjust" id="chip-rack">
+                    <div class="chip chip-10" onclick="game.adjustBet(10)">10</div>
+                    <div class="chip chip-25" onclick="game.adjustBet(25)">25</div>
+                    <div class="chip chip-50" onclick="game.adjustBet(50)">50</div>
+                    <div class="chip chip-100" onclick="game.adjustBet(100)">100</div>
+                    <div class="bet-value" id="current-bet-display">10</div>
+                    <button class="btn-round" onclick="game.clearBet()"
+                        style="width:30px;height:30px;background:#c0392b;margin-left:10px;font-size:14px;">✕</button>
+                </div>
+                <button class="btn-action primary" onclick="game.placeBet()">DEAL</button>
+            </div>
+
+            <!-- Action Controls (Hit/Stand) -->
+            <div id="action-controls" class="control-group hidden">
+                <button class="btn-action primary" onclick="game.hit()">HIT</button>
+                <button class="btn-action secondary" onclick="game.stand()">STAND</button>
+                <button class="btn-action secondary" style="background:#e67e22; box-shadow: 0 4px 0 #d35400;"
+                    onclick="game.doubleDown()">DOUBLE</button>
+            </div>
+
+            <!-- Restart Control -->
+            <div id="restart-controls" class="control-group hidden">
+                <button class="btn-action primary" onclick="game.resetRound()">PLAY AGAIN</button>
+            </div>
+        </footer>
+
+        <div id="shop-overlay" class="overlay hidden">
+            <div class="overlay-content shop-container">
+                <div class="shop-header">
+                    <h2><i class="fa-solid fa-store"></i> Store</h2>
+                    <button class="btn-close" onclick="ui.toggleShop(false)"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+
+                <!-- Tabs -->
+                <div class="shop-tabs">
+                    <button class="tab-btn active" data-tab="currency"
+                        onclick="ui.switchTab('currency')">Currency</button>
+                    <button class="tab-btn" data-tab="skins" onclick="ui.switchTab('skins')">Skins</button>
+                </div>
+
+                <!-- Tab: Currency (Chips & Gems) -->
+                <div id="tab-currency" class="tab-content active">
+
+
+                    <div class="shop-section">
+                        <h3><i class="fa-regular fa-gem"></i> Gems</h3>
+                        <div class="shop-grid">
+                            <button class="shop-item" onclick="ads.watchAd()">
+                                <div class="item-visual video"><i class="fa-solid fa-video"></i></div>
+                                <div class="item-details">
+                                    <div class="item-name">Watch Ad</div>
+                                    <div class="item-price free">+5 Gems</div>
+                                </div>
+                            </button>
+                            <button class="shop-item" onclick="iap.buyPack('small')">
+                                <div class="item-visual gems"><i class="fa-regular fa-gem"></i></div>
+                                <div class="item-details">
+                                    <div class="item-name">Gem Pouch</div>
+                                    <div class="item-price">$0.99</div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Skins -->
+                <div id="tab-skins" class="tab-content hidden">
+                    <div class="shop-grid" id="skin-shop-grid">
+                        <!-- Injected by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- Scripts (Loaded in dependency order for file:// compatibility) -->
+    <script src="js/core/Card.js"></script>
+    <script src="js/core/Deck.js"></script>
+    <script src="js/core/Hand.js"></script>
+    <script src="js/systems/EconomyManager.js"></script>
+    <script src="js/systems/AdSystem.js"></script>
+    <script src="js/systems/IAPSystem.js"></script>
+    <script src="js/systems/ShopManager.js"></script>
+    <script src="js/systems/AudioManager.js"></script>
+    <script src="js/core/GameManager.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>
