@@ -1,108 +1,172 @@
+/* --- MOBILE RESPONSIVENESS (FLUID) --- */
+/* Target any screen narrower than typical tablet */
+@media (max-width: 768px) {
 
-/* --- MOBILE RESPONSIVENESS --- */
-@media (max-width: 480px) {
     /* Header Compact */
     .hud-header {
-        padding: 10px;
+        padding: 1.5vh 3vw;
     }
-    
+
     .currency-display {
-        padding: 5px 10px;
-        font-size: 14px;
+        padding: 0.8vh 2vw;
+        font-size: 3.5vw;
+        /* Text scales with width */
     }
 
     /* Scaling Table Area */
+    .game-table {
+        /* Ensure table takes available space but leaves room for bottom controls */
+        justify-content: flex-start;
+        padding-top: 5vh;
+    }
+
     .card {
-        width: 50px;
-        height: 72px;
-        margin-left: -25px;
+        width: 14vw;
+        /* Relative card size */
+        height: 19.6vw;
+        /* Maintain ~1.4 aspect ratio */
+        margin-left: -7vw;
+        max-width: 80px;
+        max-height: 112px;
     }
 
     .card-center {
-        font-size: 24px;
+        font-size: 6vw;
     }
 
     .card-corner div:first-child {
-        font-size: 11px;
+        font-size: 3vw;
     }
 
     .cards-container {
-        height: 90px;
+        height: 22vw;
+        margin-top: 1vh;
     }
 
-    /* Compact Bet Stack */
+    .hand-score {
+        font-size: 4vw;
+        padding: 0.5vh 2vw;
+    }
+
+    /* Elastic Bet Stack Position */
     .bet-stack {
-        bottom: 180px; /* Adjust for smaller screen space */
-        height: 80px;
-        transform: translateX(-50%) scale(0.8); /* Scale down whole stack */
+        /* Positioned relative to viewport height to avoid overlap */
+        bottom: 22vh;
+        height: 10vh;
+        transform: translateX(-50%) scale(0.8);
+        width: 100vw;
+        /* Full width execution context */
+        align-items: flex-end;
+    }
+
+    .visual-chip {
+        width: 12vw;
+        height: 12vw;
+        font-size: 3vw;
+        margin-bottom: -10vw;
+    }
+
+    .chip-column {
+        width: 12vw;
+    }
+
+    .chip-column.type-10+.chip-column.type-10,
+    .chip-column.type-25+.chip-column.type-25,
+    .chip-column.type-50+.chip-column.type-50,
+    .chip-column.type-100+.chip-column.type-100 {
+        margin-left: -8vw;
     }
 
     /* Message Adjustment */
     .message {
-        font-size: 20px;
+        font-size: 8vw;
+        top: 45%;
     }
 
-    /* Bottom Controls Compression */
+    /* Bottom Controls Compression - Fixed to bottom viewport */
     .game-controls {
-        padding: 10px;
-        padding-bottom: 20px;
+        padding: 1vh 2vw;
+        padding-bottom: 3vh;
+        /* Safe area for modern phones */
+        position: absolute;
+        bottom: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+        /* Gradient bg for readability */
     }
 
     .bet-adjust {
-        gap: 8px; /* Reduce gap between chips */
-        margin-bottom: 10px;
+        gap: 2vw;
+        margin-bottom: 2vh;
     }
 
     /* Smaller Interaction Chips */
     .chip {
-        width: 45px;
-        height: 45px;
-        font-size: 12px;
-        border-width: 3px;
-        margin: 0 2px; /* Tighter margins */
+        width: 13vw;
+        height: 13vw;
+        max-width: 60px;
+        max-height: 60px;
+        font-size: 3.5vw;
+        border-width: 2px;
+        margin: 0 1vw;
     }
 
     .bet-value {
-        font-size: 16px;
-        min-width: 40px;
+        font-size: 5vw;
+        min-width: 10vw;
     }
 
     .btn-round {
-        width: 30px;
-        height: 30px;
-        font-size: 14px;
+        width: 9vw;
+        height: 9vw;
+        font-size: 4vw;
     }
 
-    /* Smaller Action Buttons */
-    button {
-        font-size: 14px;
-        padding: 12px 0;
-    }
-
+    /* Action Buttons */
     .control-group {
-        gap: 10px;
+        gap: 3vw;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    button {
+        font-size: 4.5vw;
+        padding: 2vh 0;
+        border-radius: 10px;
     }
 }
 
-/* Landscape Mode Tweak (Optional but good) */
+/* Landscape Mode Tweak */
 @media (max-height: 500px) and (orientation: landscape) {
     .app-container {
         flex-direction: row;
-        flex-wrap: wrap;
     }
-    .game-table {
-        height: 100vh;
-    }
+
     .hud-header {
+        width: 100%;
         position: absolute;
         top: 0;
-        left: 0;
-        width: 100%;
     }
+
+    .game-table {
+        width: 70%;
+        padding-top: 40px;
+    }
+
     .game-controls {
-        position: absolute;
-        bottom: 0;
+        width: 30%;
+        height: 100%;
         right: 0;
-        width: 200px;
+        bottom: 0;
+        flex-direction: column;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.5);
+    }
+
+    .bet-adjust {
+        flex-wrap: wrap;
+    }
+
+    .control-group {
+        flex-direction: column;
     }
 }
