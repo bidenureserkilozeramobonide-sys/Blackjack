@@ -1,0 +1,108 @@
+
+/* --- MOBILE RESPONSIVENESS --- */
+@media (max-width: 480px) {
+    /* Header Compact */
+    .hud-header {
+        padding: 10px;
+    }
+    
+    .currency-display {
+        padding: 5px 10px;
+        font-size: 14px;
+    }
+
+    /* Scaling Table Area */
+    .card {
+        width: 50px;
+        height: 72px;
+        margin-left: -25px;
+    }
+
+    .card-center {
+        font-size: 24px;
+    }
+
+    .card-corner div:first-child {
+        font-size: 11px;
+    }
+
+    .cards-container {
+        height: 90px;
+    }
+
+    /* Compact Bet Stack */
+    .bet-stack {
+        bottom: 180px; /* Adjust for smaller screen space */
+        height: 80px;
+        transform: translateX(-50%) scale(0.8); /* Scale down whole stack */
+    }
+
+    /* Message Adjustment */
+    .message {
+        font-size: 20px;
+    }
+
+    /* Bottom Controls Compression */
+    .game-controls {
+        padding: 10px;
+        padding-bottom: 20px;
+    }
+
+    .bet-adjust {
+        gap: 8px; /* Reduce gap between chips */
+        margin-bottom: 10px;
+    }
+
+    /* Smaller Interaction Chips */
+    .chip {
+        width: 45px;
+        height: 45px;
+        font-size: 12px;
+        border-width: 3px;
+        margin: 0 2px; /* Tighter margins */
+    }
+
+    .bet-value {
+        font-size: 16px;
+        min-width: 40px;
+    }
+
+    .btn-round {
+        width: 30px;
+        height: 30px;
+        font-size: 14px;
+    }
+
+    /* Smaller Action Buttons */
+    button {
+        font-size: 14px;
+        padding: 12px 0;
+    }
+
+    .control-group {
+        gap: 10px;
+    }
+}
+
+/* Landscape Mode Tweak (Optional but good) */
+@media (max-height: 500px) and (orientation: landscape) {
+    .app-container {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    .game-table {
+        height: 100vh;
+    }
+    .hud-header {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+    }
+    .game-controls {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 200px;
+    }
+}
