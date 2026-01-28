@@ -4,7 +4,18 @@ window.ShopManager = class ShopManager {
         this.cardSkins = [
             { id: 'default', name: 'Classic Red', price: 0, cssClass: '' },
             { id: 'blue', name: 'Royal Blue', price: 50, cssClass: 'skin-blue' },
-            { id: 'black', name: 'Midnight Black', price: 100, cssClass: 'skin-black' }
+            { id: 'black', name: 'Midnight Black', price: 100, cssClass: 'skin-black' },
+            { id: 'gold', name: 'Gold Luxury', price: 150, cssClass: 'skin-gold' },
+            { id: 'neon', name: 'Neon Cyber', price: 200, cssClass: 'skin-neon' },
+            { id: 'emerald', name: 'Emerald Elite', price: 250, cssClass: 'skin-emerald' },
+            { id: 'phoenix', name: 'Phoenix Fire', price: 300, cssClass: 'skin-phoenix' },
+            { id: 'diamond', name: 'Diamond Frost', price: 500, cssClass: 'skin-diamond' },
+            // Phase 8 Premium Skins
+            { id: 'vintage', name: 'Vintage Worn', price: 150, cssClass: 'skin-vintage' },
+            { id: 'royal', name: 'Royal Crown', price: 300, cssClass: 'skin-royal' },
+            { id: 'carbon', name: 'Carbon Fiber', price: 250, cssClass: 'skin-carbon' },
+            { id: 'holo', name: 'Holographic', price: 500, cssClass: 'skin-holo' },
+            { id: 'crimson', name: 'Crimson Blood', price: 400, cssClass: 'skin-crimson' }
         ];
         this.activeSkinId = localStorage.getItem('sb_active_skin') || 'default';
         this.unlockedSkins = JSON.parse(localStorage.getItem('sb_unlocked_skins')) || ['default'];
@@ -73,11 +84,9 @@ window.ShopManager = class ShopManager {
             else if (isOwned) priceText = 'OWNED';
             else priceText = `${skin.price} <i class="fa-regular fa-gem"></i>`;
 
-            // Card Preview logic
-            let previewHTML = '';
-            if (skin.id === 'default') previewHTML = '<div class="card" style="transform:scale(0.5)"><div class="card-center" style="font-size:20px">♥</div></div>';
-            else if (skin.id === 'blue') previewHTML = '<div class="card skin-blue face-down" style="transform:scale(0.5); width:50px; height:70px;"></div>';
-            else if (skin.id === 'black') previewHTML = '<div class="card skin-black face-down" style="transform:scale(0.5); width:50px; height:70px;"></div>';
+            // Card Preview logic - dynamic for all skins
+            const skinClass = skin.cssClass || '';
+            const previewHTML = `<div class="card ${skinClass} face-down" style="transform:scale(0.5); width:50px; height:70px;"></div>`;
 
             btn.innerHTML = `
                 <div class="item-visual">

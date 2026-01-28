@@ -1,3 +1,5 @@
+console.log('[GameManager] Version 11 loaded at', new Date().toISOString());
+
 window.GameManager = class GameManager {
     constructor(economyManager, shopManager, audioManager) {
         this.economy = economyManager;
@@ -9,6 +11,14 @@ window.GameManager = class GameManager {
 
         this.state = 'BETTING'; // BETTING, DEALING, PLAYER_TURN, DEALER_TURN, RESULT
         this.currentBet = 10;
+
+        // Insurance & Split properties
+        this.insuranceBet = 0;
+        this.hasInsurance = false;
+        this.splitHand = null; // Second hand if split
+        this.activeHandIndex = 0; // 0 = main hand, 1 = split hand
+        this.isSplit = false;
+        this.splitBet = 0;
 
         this.deck.shuffle();
         this.updateUI();
@@ -212,13 +222,93 @@ window.GameManager = class GameManager {
         this.playerHand.reset();
         this.dealerHand.reset();
 
-        // Initial Deal (Mock delay logic would go here in full app, instantaneous for logic test)
+        // Hide previous result message and controls
+        const msg = document.getElementById('message-display');
+        if (msg) msg.classList.add('hidden');
+
+        const restartCtrl = document.getElementById('restart-controls');
+        if (restartCtrl) {
+            restartCtrl.classList.add('hidden');
+            restartCtrl.style.display = '';
+        }
+
+        const actionCtrl = document.getElementById('action-controls');
+        if (actionCtrl) {
+            actionCtrl.classList.add('hidden');
+            actionCtrl.style.display = '';
+        }
+
+        // Reset split/insurance state
+        this.insuranceBet = 0;
+        this.hasInsurance = false;
+        this.splitHand = null;
+        this.isSplit = false;
+        this.splitBet = 0;
+        this.activeHandIndex = 0;
+
+        // Initial Deal
         this.playerHand.addCard(this.deck.draw());
         this.dealerHand.addCard(this.deck.draw());
         this.playerHand.addCard(this.deck.draw());
         this.dealerHand.addCard(this.deck.draw());
 
         if (this.audio) this.audio.play('card_flip');
+
+        // Insurance disabled - go directly to player turn
+        // (Original code checked if dealer shows Ace and offered insurance)
+
+        this.proceedAfterInsurance();
+    }
+
+    offerInsurance() {
+        // Show insurance prompt
+        this.state = 'INSURANCE_OFFER';
+        document.getElementById('betting-controls').classList.add('hidden');
+        document.getElementById('action-controls').classList.add('hidden');
+        document.getElementById('insurance-controls').classList.remove('hidden');
+        this.updateUI();
+    }
+
+    takeInsurance() {
+        // Insurance costs half the original bet
+        const insuranceCost = Math.floor(this.currentBet / 2);
+
+        if (this.economy && !this.economy.spendChips(insuranceCost)) {
+            alert("Not enough chips for insurance!");
+            return;
+        }
+
+        this.insuranceBet = insuranceCost;
+        this.hasInsurance = true;
+        if (this.audio) this.audio.play('chip_place');
+
+        document.getElementById('insurance-controls').classList.add('hidden');
+        this.proceedAfterInsurance();
+    }
+
+    declineInsurance() {
+        this.hasInsurance = false;
+        this.insuranceBet = 0;
+        document.getElementById('insurance-controls').classList.add('hidden');
+        this.proceedAfterInsurance();
+    }
+
+    proceedAfterInsurance() {
+        // Check if dealer has blackjack
+        if (this.dealerHand.isBlackjack()) {
+            // Dealer has blackjack!
+            if (this.hasInsurance) {
+                // Insurance pays 2:1
+                const payout = this.insuranceBet * 3;
+                if (this.economy) this.economy.addChips(payout);
+            }
+            this.state = 'RESULT';
+            this.resolveGame();
+            return;
+        }
+
+        // Dealer doesn't have blackjack, insurance is lost
+        // (chips already spent, no refund)
 
         if (this.playerHand.isBlackjack()) {
             this.state = 'RESULT';
@@ -227,31 +317,120 @@ window.GameManager = class GameManager {
             this.state = 'PLAYER_TURN';
             document.getElementById('betting-controls').classList.add('hidden');
             document.getElementById('action-controls').classList.remove('hidden');
+            this.updateSplitButton();
         }
 
         this.updateUI();
     }
 
+    canSplit() {
+        // Can only split on first action with exactly 2 cards of same rank
+        if (this.isSplit) return false;
+        if (this.playerHand.cards.length !== 2) return false;
+        return this.playerHand.cards[0].rank === this.playerHand.cards[1].rank;
+    }
+
+    updateSplitButton() {
+        const splitBtn = document.getElementById('split-btn');
+        if (splitBtn) {
+            if (this.canSplit() && this.economy && this.economy.chips >= this.currentBet) {
+                splitBtn.classList.remove('hidden');
+            } else {
+                splitBtn.classList.add('hidden');
+            }
+        }
+    }
+
+    split() {
+        if (this.state !== 'PLAYER_TURN' || !this.canSplit()) return;
+
+        // Check if player has enough chips for split bet
+        if (this.economy && !this.economy.spendChips(this.currentBet)) {
+            alert("Not enough chips to split!");
+            return;
+        }
+
+        this.splitBet = this.currentBet;
+        this.isSplit = true;
+
+        // Create split hand with second card
+        this.splitHand = new window.Hand('split-cards', 'split-score');
+        this.splitHand.addCard(this.playerHand.cards.pop());
+
+        // Draw new cards for each hand
+        this.playerHand.addCard(this.deck.draw());
+        this.splitHand.addCard(this.deck.draw());
+
+        if (this.audio) this.audio.play('card_flip');
+
+        // Show split area
+        document.getElementById('split-area').classList.remove('hidden');
+
+        // Hide split button
+        document.getElementById('split-btn').classList.add('hidden');
+
+        // Start playing first hand
+        this.activeHandIndex = 0;
+        this.highlightActiveHand();
+        this.updateUI();
+    }
+
+    highlightActiveHand() {
+        const playerArea = document.getElementById('player-area');
+        const splitArea = document.getElementById('split-area');
+
+        if (this.activeHandIndex === 0) {
+            playerArea.classList.add('active-hand');
+            if (splitArea) splitArea.classList.remove('active-hand');
+        } else {
+            playerArea.classList.remove('active-hand');
+            if (splitArea) splitArea.classList.add('active-hand');
+        }
+    }
+
+    getActiveHand() {
+        return this.activeHandIndex === 0 ? this.playerHand : this.splitHand;
+    }
+
     hit() {
         if (this.state !== 'PLAYER_TURN') return;
 
-        this.playerHand.addCard(this.deck.draw());
+        const activeHand = this.getActiveHand();
+        activeHand.addCard(this.deck.draw());
         if (this.audio) this.audio.play('card_flip');
 
-        if (this.playerHand.isBusted()) {
-            this.state = 'RESULT';
-            this.resolveGame();
+        if (activeHand.isBusted()) {
+            // Hand busted, check if we have another hand to play
+            if (this.isSplit && this.activeHandIndex === 0) {
+                // Move to split hand
+                this.activeHandIndex = 1;
+                this.highlightActiveHand();
+            } else {
+                // All hands done
+                this.state = 'DEALER_TURN';
+                this.dealerTurn();
+            }
+        } else if (activeHand.getScore() === 21) {
+            // Auto-stand at 21
+            if (this.audio) this.audio.play('win');
+            this.stand();
         }
         this.updateUI();
     }
 
     doubleDown() {
         if (this.state !== 'PLAYER_TURN') return;
+        // Only on first action (2 cards)
+        if (this.playerHand.cards.length !== 2) return;
+
         // Check if player has enough chips
         if (this.economy && !this.economy.spendChips(this.currentBet)) {
             alert("Not enough chips to Double Down!");
             return;
         }
+
+        // Track for achievements
+        this.isDoubledDown = true;
 
         // Double the bet
         if (this.audio) this.audio.play('chip_place');
@@ -274,6 +453,16 @@ window.GameManager = class GameManager {
 
     stand() {
         if (this.state !== 'PLAYER_TURN') return;
+
+        // If split and on first hand, move to second hand
+        if (this.isSplit && this.activeHandIndex === 0) {
+            this.activeHandIndex = 1;
+            this.highlightActiveHand();
+            this.updateUI();
+            return;
+        }
+
+        // All hands complete, dealer's turn
         this.state = 'DEALER_TURN';
         this.dealerTurn();
     }
@@ -287,71 +476,217 @@ window.GameManager = class GameManager {
         this.state = 'RESULT';
         this.resolveGame();
         this.updateUI();
+
+        // Force UI controls update after everything else
+        document.getElementById('action-controls').classList.add('hidden');
+        document.getElementById('restart-controls').classList.remove('hidden');
     }
 
     resolveGame() {
-        const pScore = this.playerHand.getScore();
         const dScore = this.dealerHand.getScore();
-        const pBust = this.playerHand.isBusted();
         const dBust = this.dealerHand.isBusted();
-        let result = "";
-        let resultClass = "";
 
-        if (pBust) {
-            result = "Busted! Dealer Wins.";
-            resultClass = "lose";
-            if (this.audio) this.audio.play('lose');
-        }
-        else if (dBust) {
-            result = "Dealer Busted! You Win!";
-            if (this.economy) this.economy.addChips(this.currentBet * 2);
-            resultClass = "win";
-            if (this.audio) this.audio.play('win');
-        }
-        else if (pScore > dScore) {
-            result = "You Win!";
-            if (this.economy) this.economy.addChips(this.currentBet * 2);
-            resultClass = "win";
-            if (this.audio) this.audio.play('win');
-        }
-        else if (dScore > pScore) {
-            result = "Dealer Wins.";
-            resultClass = "lose";
-            if (this.audio) this.audio.play('lose');
-        }
-        else {
-            result = "Push (Tie).";
-            if (this.economy) this.economy.addChips(this.currentBet);
-            resultClass = "push";
-            if (this.audio) this.audio.play('push');
+        let totalWinnings = 0;
+        let results = [];
+
+        const resolveHand = (hand, bet, handName) => {
+            const pScore = hand.getScore();
+            const pBust = hand.isBusted();
+
+            if (pBust) {
+                return { result: `${handName}: Bust`, class: 'lose', payout: 0 };
+            } else if (dBust) {
+                return { result: `${handName}: Win!`, class: 'win', payout: bet * 2 };
+            } else if (pScore > dScore) {
+                return { result: `${handName}: Win!`, class: 'win', payout: bet * 2 };
+            } else if (dScore > pScore) {
+                return { result: `${handName}: Lose`, class: 'lose', payout: 0 };
+            } else {
+                return { result: `${handName}: Push`, class: 'push', payout: bet };
+            }
+        };
+
+        const mainResult = resolveHand(this.playerHand, this.currentBet, this.isSplit ? 'Hand 1' : '');
+        results.push(mainResult);
+        totalWinnings += mainResult.payout;
+
+        if (this.isSplit && this.splitHand) {
+            const splitResult = resolveHand(this.splitHand, this.splitBet, 'Hand 2');
+            results.push(splitResult);
+            totalWinnings += splitResult.payout;
         }
 
-        console.log(result);
+        if (this.economy && totalWinnings > 0) {
+            this.economy.addChips(totalWinnings);
+        }
+
+        let resultText = '';
+        let resultClass = 'push';
+
+        if (this.isSplit) {
+            resultText = results.map(r => r.result).join(' | ');
+            const wins = results.filter(r => r.class === 'win').length;
+            const losses = results.filter(r => r.class === 'lose').length;
+            if (wins > losses) resultClass = 'win';
+            else if (losses > wins) resultClass = 'lose';
+        } else {
+            resultText = mainResult.class === 'win' ? 'You Win!' :
+                mainResult.class === 'lose' ? 'Dealer Wins.' : 'Push (Tie).';
+            resultClass = mainResult.class;
+        }
+
+        if (this.audio) {
+            if (resultClass === 'win') this.audio.play('win');
+            else if (resultClass === 'lose') this.audio.play('lose');
+            else this.audio.play('push');
+        }
+
+        console.log(resultText);
         const msg = document.getElementById('message-display');
         if (msg) {
-            msg.innerText = result;
-            msg.className = "message " + resultClass; // Reset class
+            msg.innerText = resultText;
+            msg.className = "message " + resultClass;
             msg.classList.remove('hidden');
         }
 
-        // Apply visual to hand area
+        // Visual effects based on result
         if (resultClass === "win") {
             document.getElementById('player-area').classList.add('win-effect');
+
+            // Check for blackjack special effect
+            if (this.playerHand.isBlackjack()) {
+                if (this.effects) this.effects.showBlackjackEffect();
+            } else if (totalWinnings >= this.currentBet * 2) {
+                // Big win effect for double or more
+                if (this.effects) this.effects.showBigWinEffect(totalWinnings);
+            } else {
+                // Normal win confetti
+                if (this.effects) this.effects.showConfetti('medium');
+            }
+        } else if (resultClass === "lose" && this.playerHand.isBusted()) {
+            // Bust effect
+            if (this.effects) this.effects.showBustEffect();
+            if (this.animations) this.animations.shake(document.getElementById('player-cards'));
         }
 
-        // Show Restart
-        document.getElementById('action-controls').classList.add('hidden');
-        document.getElementById('restart-controls').classList.remove('hidden');
+        // Track achievements
+        if (this.achievements) {
+            const isBlackjack = this.playerHand.isBlackjack();
+            const splitWinBoth = this.isSplit && results.every(r => r.class === 'win');
+
+            this.achievements.recordHandResult({
+                won: resultClass === 'win',
+                lost: resultClass === 'lose',
+                blackjack: isBlackjack,
+                doubleWin: this.isDoubledDown && resultClass === 'win',
+                splitWin: splitWinBoth,
+                insuranceSave: this.hasInsurance && this.dealerHand.isBlackjack(),
+                comeback: this.wasAtZeroChips && resultClass === 'win'
+            });
+
+            // Check chip milestones
+            if (this.economy) {
+                this.achievements.checkChipsAchievements(this.economy.chips);
+            }
+        }
+
+        // Track stats
+        if (this.stats) {
+            this.stats.recordHand({
+                won: resultClass === 'win',
+                lost: resultClass === 'lose',
+                blackjack: this.playerHand.isBlackjack(),
+                busted: this.playerHand.isBusted(),
+                doubled: this.isDoubledDown,
+                split: this.isSplit,
+                insuranceWin: this.hasInsurance && this.dealerHand.isBlackjack(),
+                payout: totalWinnings,
+                betLost: resultClass === 'lose' ? this.currentBet : 0
+            });
+        }
+
+        // Track quests
+        if (this.quests) {
+            this.quests.recordHandResult({
+                won: resultClass === 'win',
+                lost: resultClass === 'lose',
+                blackjack: this.playerHand.isBlackjack(),
+                doubleWin: this.isDoubledDown && resultClass === 'win',
+                split: this.isSplit,
+                chipsEarned: totalWinnings,
+                usedInsurance: this.hasInsurance
+            });
+        }
+
+        // Record in history
+        if (this.history) {
+            this.history.recordHand({
+                playerCards: this.playerHand.cards,
+                dealerCards: this.dealerHand.cards,
+                playerScore: this.playerHand.getScore(),
+                dealerScore: this.dealerHand.getScore(),
+                bet: this.currentBet,
+                result: this.playerHand.isBlackjack() && resultClass === 'win' ? 'blackjack' : resultClass,
+                payout: totalWinnings,
+                wasDoubled: this.isDoubledDown,
+                wasSplit: this.isSplit
+            });
+        }
+
+        // Force hide action controls and show restart controls
+        const actionCtrl = document.getElementById('action-controls');
+        const restartCtrl = document.getElementById('restart-controls');
+
+        console.log('resolveGame: actionCtrl=', actionCtrl, 'restartCtrl=', restartCtrl);
+
+        if (actionCtrl) {
+            actionCtrl.classList.add('hidden');
+            actionCtrl.style.display = 'none'; // Force hide
+        }
+        if (restartCtrl) {
+            restartCtrl.classList.remove('hidden');
+            restartCtrl.style.display = 'flex'; // Force show
+        }
     }
 
     resetRound() {
         this.state = 'BETTING';
         document.getElementById('message-display').classList.add('hidden');
-        document.getElementById('restart-controls').classList.add('hidden');
-        document.getElementById('betting-controls').classList.remove('hidden');
-        document.getElementById('player-area').classList.remove('win-effect'); // Clear FX
+
+        // Reset controls with inline style cleanup
+        const restartCtrl = document.getElementById('restart-controls');
+        const actionCtrl = document.getElementById('action-controls');
+        const bettingCtrl = document.getElementById('betting-controls');
+
+        if (restartCtrl) {
+            restartCtrl.classList.add('hidden');
+            restartCtrl.style.display = '';
+        }
+        if (actionCtrl) {
+            actionCtrl.classList.add('hidden');
+            actionCtrl.style.display = '';
+        }
+        if (bettingCtrl) {
+            bettingCtrl.classList.remove('hidden');
+        }
+
+        document.getElementById('player-area').classList.remove('win-effect');
+        document.getElementById('player-area').classList.remove('active-hand');
+
+        // Reset split UI
+        const splitArea = document.getElementById('split-area');
+        if (splitArea) {
+            splitArea.classList.add('hidden');
+            splitArea.classList.remove('active-hand');
+            const splitCards = document.getElementById('split-cards');
+            if (splitCards) splitCards.innerHTML = '';
+        }
+
         this.playerHand.reset();
         this.dealerHand.reset();
+        if (this.splitHand) this.splitHand = null;
+        this.isSplit = false;
+        this.splitBet = 0;
         this.clearVisualStack();
         this.updateUI();
     }
@@ -372,12 +707,16 @@ window.GameManager = class GameManager {
             }
         }
 
-        // In a real system, this would emit events or call UIManager
         const betDisplay = document.getElementById('current-bet-display');
         if (betDisplay) betDisplay.innerText = this.currentBet;
 
         this.renderHand(this.playerHand);
-        this.renderHand(this.dealerHand, this.state === 'PLAYER_TURN'); // Hide dealer hole card if player turn
+        this.renderHand(this.dealerHand, this.state === 'PLAYER_TURN' || this.state === 'INSURANCE_OFFER');
+
+        // Render split hand if exists
+        if (this.isSplit && this.splitHand) {
+            this.renderHand(this.splitHand);
+        }
     }
 
     renderHand(hand, hideHoleCard = false) {

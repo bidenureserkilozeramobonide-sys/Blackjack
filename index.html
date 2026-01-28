@@ -5,27 +5,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Spectral Blackjack</title>
-    <link rel="stylesheet" href="css/style.css?v=4.34">
-    <link rel="stylesheet" href="css/responsive.css?v=1.0">
+    <link rel="stylesheet" href="css/style.css?v=10.0">
+    <link rel="stylesheet" href="css/responsive.css?v=6.0">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="manifest" href="manifest.json">
+    <!-- Google AdSense - Replace YOUR_PUBLISHER_ID when approved -->
+    <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_PUBLISHER_ID" crossorigin="anonymous"></script> -->
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js?v=11')
+                    .then(reg => {
+                        console.log('[SW] Registered:', reg.scope);
+                        // Check for updates
+                        reg.addEventListener('updatefound', () => {
+                            console.log('[SW] New version available!');
+                        });
+                    })
+                    .catch(err => console.log('[SW] Registration failed:', err));
+            });
+        }
+    </script>
 </head>
 
 <body>
     <div class="app-container">
         <!-- Top HUD -->
         <header class="hud-header">
-            <div class="currency-display chip-display">
-                <i class="fa-solid fa-coins"></i>
-                <span id="chip-balance">1000</span>
+            <div class="header-left">
+                <div class="currency-display chip-display">
+                    <i class="fa-solid fa-coins"></i>
+                    <span id="chip-balance">1000</span>
+                </div>
             </div>
-            <div class="currency-display gem-display" onclick="ui.toggleShop(true)">
-                <i class="fa-regular fa-gem"></i>
-                <span id="gem-balance">0</span>
-                <div class="plus-icon"><i class="fa-solid fa-plus"></i></div>
+            <div class="header-right">
+                <div class="currency-display gem-display" onclick="ui.toggleShop(true)">
+                    <i class="fa-regular fa-gem"></i>
+                    <span id="gem-balance">0</span>
+                    <div class="plus-icon"><i class="fa-solid fa-plus"></i></div>
+                </div>
             </div>
         </header>
 
@@ -50,6 +73,14 @@
                     <!-- Cards injected here -->
                 </div>
             </div>
+
+            <!-- Split Hand Area (hidden by default) -->
+            <div id="split-area" class="hand-area hidden">
+                <div class="hand-score hidden" id="split-score">0</div>
+                <div class="cards-container" id="split-cards">
+                    <!-- Split cards injected here -->
+                </div>
+            </div>
         </main>
 
         <!-- Bottom Controls -->
@@ -69,12 +100,23 @@
                 <button class="btn-action primary" onclick="game.placeBet()">DEAL</button>
             </div>
 
-            <!-- Action Controls (Hit/Stand) -->
+            <!-- Action Controls (Hit/Stand/Double/Split) -->
             <div id="action-controls" class="control-group hidden">
                 <button class="btn-action primary" onclick="game.hit()">HIT</button>
                 <button class="btn-action secondary" onclick="game.stand()">STAND</button>
                 <button class="btn-action secondary" style="background:#e67e22; box-shadow: 0 4px 0 #d35400;"
                     onclick="game.doubleDown()">DOUBLE</button>
+                <button id="split-btn" class="btn-action secondary hidden"
+                    style="background:#9b59b6; box-shadow: 0 4px 0 #8e44ad;" onclick="game.split()">SPLIT</button>
+            </div>
+
+            <!-- Insurance Controls -->
+            <div id="insurance-controls" class="control-group hidden">
+                <span style="color:#fff; margin-right:10px; font-weight:bold;">Insurance?</span>
+                <button class="btn-action secondary" style="background:#27ae60; box-shadow: 0 4px 0 #1e8449;"
+                    onclick="game.takeInsurance()">YES (½ Bet)</button>
+                <button class="btn-action secondary" style="background:#c0392b; box-shadow: 0 4px 0 #a93226;"
+                    onclick="game.declineInsurance()">NO</button>
             </div>
 
             <!-- Restart Control -->
@@ -92,13 +134,27 @@
 
                 <!-- Tabs -->
                 <div class="shop-tabs">
-                    <button class="tab-btn active" data-tab="currency"
-                        onclick="ui.switchTab('currency')">Currency</button>
+                    <button class="tab-btn active" data-tab="wheel" onclick="ui.switchTab('wheel')">Wheel</button>
+                    <button class="tab-btn" data-tab="currency" onclick="ui.switchTab('currency')">Currency</button>
                     <button class="tab-btn" data-tab="skins" onclick="ui.switchTab('skins')">Skins</button>
+                    <button class="tab-btn" data-tab="themes" onclick="ui.switchTab('themes')">Themes</button>
+                    <button class="tab-btn" data-tab="avatars" onclick="ui.switchTab('avatars')">Avatars</button>
+                    <button class="tab-btn" data-tab="quests" onclick="ui.switchTab('quests')">Quests</button>
+                    <button class="tab-btn" data-tab="history" onclick="ui.switchTab('history')">History</button>
+                    <button class="tab-btn" data-tab="achievements"
+                        onclick="ui.switchTab('achievements')">Trophies</button>
+                    <button class="tab-btn" data-tab="stats" onclick="ui.switchTab('stats')">Stats</button>
+                </div>
+
+                <!-- Tab: Wheel -->
+                <div id="tab-wheel" class="tab-content active">
+                    <div id="wheel-container" class="wheel-shop-container">
+                        <!-- Wheel will be rendered here by WheelManager -->
+                    </div>
                 </div>
 
                 <!-- Tab: Currency (Chips & Gems) -->
-                <div id="tab-currency" class="tab-content active">
+                <div id="tab-currency" class="tab-content">
 
 
                     <div class="shop-section">
@@ -118,6 +174,15 @@
                                     <div class="item-price">$0.99</div>
                                 </div>
                             </button>
+                            <!-- Ko-fi Donation Button -->
+                            <a href="https://ko-fi.com/YOUR_KOFI_USERNAME" target="_blank" rel="noopener"
+                                class="shop-item kofi-btn">
+                                <div class="item-visual" style="color: #FF5E5B;"><i class="fa-solid fa-heart"></i></div>
+                                <div class="item-details">
+                                    <div class="item-name">Support Dev</div>
+                                    <div class="item-price free">Ko-fi ☕</div>
+                                </div>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -125,6 +190,48 @@
                 <!-- Tab: Skins -->
                 <div id="tab-skins" class="tab-content hidden">
                     <div class="shop-grid" id="skin-shop-grid">
+                        <!-- Injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Tab: Achievements -->
+                <div id="tab-achievements" class="tab-content hidden">
+                    <div id="achievements-grid">
+                        <!-- Injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Tab: Themes -->
+                <div id="tab-themes" class="tab-content hidden">
+                    <div id="themes-grid">
+                        <!-- Injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Tab: Avatars -->
+                <div id="tab-avatars" class="tab-content hidden">
+                    <div id="avatars-grid">
+                        <!-- Injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Tab: Quests -->
+                <div id="tab-quests" class="tab-content hidden">
+                    <div id="quests-grid">
+                        <!-- Injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Tab: History -->
+                <div id="tab-history" class="tab-content hidden">
+                    <div id="history-grid">
+                        <!-- Injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Tab: Stats -->
+                <div id="tab-stats" class="tab-content hidden">
+                    <div id="stats-grid">
                         <!-- Injected by JS -->
                     </div>
                 </div>
@@ -141,9 +248,22 @@
     <script src="js/systems/AdSystem.js"></script>
     <script src="js/systems/IAPSystem.js"></script>
     <script src="js/systems/ShopManager.js"></script>
-    <script src="js/systems/AudioManager.js"></script>
-    <script src="js/core/GameManager.js"></script>
-    <script src="js/main.js"></script>
+    <script src="js/systems/AudioManager.js?v=3"></script>
+    <script src="js/systems/AchievementManager.js?v=3"></script>
+    <script src="js/systems/DailyBonusManager.js?v=1"></script>
+    <script src="js/systems/StatsManager.js?v=1"></script>
+    <script src="js/systems/QuestManager.js?v=1"></script>
+    <script src="js/systems/WheelManager.js?v=1"></script>
+    <script src="js/systems/ThemeManager.js?v=1"></script>
+    <script src="js/systems/AvatarManager.js?v=1"></script>
+    <script src="js/systems/HistoryManager.js?v=1"></script>
+    <script src="js/systems/GestureManager.js?v=1"></script>
+    <script src="js/systems/HapticManager.js?v=1"></script>
+    <script src="js/systems/NotificationManager.js?v=1"></script>
+    <script src="js/systems/AnimationManager.js?v=1"></script>
+    <script src="js/systems/EffectsManager.js?v=1"></script>
+    <script src="js/core/GameManager.js?v=15"></script>
+    <script src="js/main.js?v=15"></script>
 </body>
 
 </html>
