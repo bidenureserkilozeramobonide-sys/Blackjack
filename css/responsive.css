@@ -95,30 +95,40 @@
     }
 
     .bet-adjust {
-        gap: 2vw;
-        margin-bottom: 2vh;
+        gap: 6px;
+        margin-bottom: 1.5vh;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 5px 15px;
+        justify-content: center;
+        width: 100%;
+        box-sizing: border-box;
+        -webkit-overflow-scrolling: touch;
     }
 
     /* Smaller Interaction Chips */
     .chip {
-        width: 13vw;
-        height: 13vw;
-        max-width: 60px;
-        max-height: 60px;
-        font-size: 3.5vw;
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+        font-size: 14px;
         border-width: 2px;
-        margin: 0 1vw;
+        margin: 0 2px;
+        flex-shrink: 0;
     }
 
     .bet-value {
-        font-size: 5vw;
-        min-width: 10vw;
+        font-size: 18px;
+        min-width: 40px;
+        flex-shrink: 0;
     }
 
     .btn-round {
-        width: 9vw;
-        height: 9vw;
-        font-size: 4vw;
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        font-size: 16px;
+        flex-shrink: 0;
     }
 
     /* Action Buttons */
@@ -168,5 +178,434 @@
 
     .control-group {
         flex-direction: column;
+    }
+}
+
+/* ========================================
+   SMALL PHONES (iPhone SE, Galaxy A series)
+   ======================================== */
+@media (max-width: 360px) {
+    .currency-display {
+        padding: 0.5vh 1.5vw;
+        font-size: 3vw;
+        gap: 3px;
+    }
+
+    .currency-display .icon {
+        font-size: 3.5vw;
+    }
+
+    .card {
+        width: 12vw;
+        height: 16.8vw;
+        margin-left: -6vw;
+        max-width: 55px;
+        max-height: 77px;
+    }
+
+    .card-center {
+        font-size: 5vw;
+    }
+
+    .card-corner div:first-child {
+        font-size: 2.5vw;
+    }
+
+    .chip {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        font-size: 11px;
+        flex-shrink: 0;
+    }
+
+    button {
+        font-size: 4vw;
+        padding: 1.5vh 0;
+    }
+
+    .message {
+        font-size: 7vw;
+    }
+
+    .hand-score {
+        font-size: 3.5vw;
+    }
+
+    /* Shop adjustments */
+    .shop-overlay .shop-content {
+        width: 95%;
+        height: 90%;
+    }
+
+    .shop-tabs button {
+        font-size: 3vw;
+        padding: 1vh 2vw;
+    }
+}
+
+/* ========================================
+   LARGE PHONES (iPhone Pro Max, Galaxy Ultra)
+   ======================================== */
+@media (min-width: 400px) and (max-width: 768px) {
+    .card {
+        width: 13vw;
+        height: 18.2vw;
+        max-width: 90px;
+        max-height: 126px;
+    }
+
+    .chip {
+        width: 14vw;
+        height: 14vw;
+        max-width: 70px;
+        max-height: 70px;
+    }
+
+    .message {
+        font-size: 9vw;
+    }
+
+    button {
+        font-size: 5vw;
+        padding: 2.5vh 0;
+    }
+}
+
+/* ========================================
+   SAFE AREAS (Notch, Dynamic Island, Home Bar)
+   ======================================== */
+@supports (padding: env(safe-area-inset-top)) {
+    .hud-header {
+        padding-top: calc(1.5vh + env(safe-area-inset-top));
+    }
+
+    .game-controls {
+        padding-bottom: calc(3vh + env(safe-area-inset-bottom));
+    }
+
+    /* Full-screen overlay adjustments */
+    .shop-overlay,
+    .achievements-overlay,
+    .stats-overlay {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+    }
+}
+
+/* ========================================
+   TABLETS (iPad, Android Tablets)
+   ======================================== */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .app-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .card {
+        width: 80px;
+        height: 112px;
+        margin-left: -40px;
+    }
+
+    .card-center {
+        font-size: 32px;
+    }
+
+    .card-corner div:first-child {
+        font-size: 14px;
+    }
+
+    .chip {
+        width: 70px;
+        height: 70px;
+        font-size: 18px;
+    }
+
+    .message {
+        font-size: 48px;
+    }
+
+    button {
+        font-size: 20px;
+        padding: 15px 30px;
+    }
+
+    .game-controls {
+        max-width: 600px;
+        margin: 0 auto;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+}
+
+/* ========================================
+   DESKTOP / LARGE SCREENS
+   ======================================== */
+@media (min-width: 1024px) {
+    .app-container {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .game-table {
+        padding-top: 30px;
+    }
+
+    .card {
+        width: 90px;
+        height: 126px;
+        margin-left: -45px;
+    }
+
+    .chip {
+        width: 65px;
+        height: 65px;
+    }
+
+    .game-controls {
+        max-width: 500px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: transparent;
+    }
+
+    button {
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 0 rgba(0, 0, 0, 0.3);
+    }
+
+    button:active {
+        transform: translateY(2px);
+        box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+    }
+}
+
+/* ========================================
+   HIGH DPI / RETINA DISPLAYS
+   ======================================== */
+@media (-webkit-min-device-pixel-ratio: 2),
+(min-resolution: 192dpi) {
+    .card {
+        border-width: 1px;
+    }
+
+    .chip {
+        border-width: 2px;
+    }
+}
+
+/* ========================================
+   ASPECT RATIO: 4:3 (iPad, tablets, older devices)
+   ======================================== */
+@media (min-aspect-ratio: 3/4) and (max-aspect-ratio: 4/3) {
+    .game-table {
+        padding-top: 8vh;
+        justify-content: space-around;
+    }
+
+    .card {
+        width: 70px;
+        height: 98px;
+        margin-left: -35px;
+    }
+
+    .cards-container {
+        height: 110px;
+        margin-top: 2vh;
+    }
+
+    .hand-score {
+        font-size: 18px;
+        padding: 8px 16px;
+    }
+
+    .bet-adjust {
+        gap: 12px;
+        padding: 10px 20px;
+    }
+
+    .chip {
+        width: 55px;
+        height: 55px;
+        min-width: 55px;
+        font-size: 16px;
+    }
+
+    .bet-value {
+        font-size: 22px;
+        min-width: 50px;
+    }
+
+    button {
+        font-size: 16px;
+        padding: 14px 24px;
+    }
+
+    .message {
+        font-size: 36px;
+    }
+}
+
+/* ========================================
+   ASPECT RATIO: 16:9 (Standard phones, monitors)
+   ======================================== */
+@media (min-aspect-ratio: 9/16) and (max-aspect-ratio: 10/16) {
+    .game-table {
+        padding-top: 5vh;
+        justify-content: flex-start;
+    }
+
+    .player-area {
+        margin-top: auto;
+        margin-bottom: 15vh;
+    }
+
+    .dealer-area {
+        margin-top: 5vh;
+    }
+
+    .bet-stack {
+        bottom: 18vh;
+    }
+
+    .game-controls {
+        padding-bottom: 2vh;
+    }
+
+    .bet-adjust {
+        gap: 8px;
+    }
+
+    .chip {
+        width: 50px;
+        height: 50px;
+        min-width: 50px;
+    }
+}
+
+/* ========================================
+   ASPECT RATIO: 21:9 (Ultra-wide phones, Galaxy Fold)
+   ======================================== */
+@media (max-aspect-ratio: 9/21) {
+    .app-container {
+        max-width: 100%;
+    }
+
+    .game-table {
+        padding-top: 3vh;
+        justify-content: space-between;
+    }
+
+    .dealer-area {
+        margin-top: 2vh;
+    }
+
+    .player-area {
+        margin-bottom: 12vh;
+    }
+
+    .card {
+        width: 55px;
+        height: 77px;
+        margin-left: -28px;
+    }
+
+    .cards-container {
+        height: 85px;
+    }
+
+    .hand-score {
+        font-size: 14px;
+        padding: 4px 10px;
+    }
+
+    .bet-stack {
+        bottom: 15vh;
+        transform: translateX(-50%) scale(0.7);
+    }
+
+    .game-controls {
+        padding: 1vh 10px;
+        padding-bottom: 2vh;
+    }
+
+    .bet-adjust {
+        gap: 5px;
+        margin-bottom: 1vh;
+    }
+
+    .chip {
+        width: 42px;
+        height: 42px;
+        min-width: 42px;
+        font-size: 12px;
+    }
+
+    .bet-value {
+        font-size: 16px;
+        min-width: 35px;
+    }
+
+    button {
+        font-size: 14px;
+        padding: 10px 16px;
+    }
+
+    .control-group {
+        gap: 8px;
+    }
+
+    .message {
+        font-size: 28px;
+    }
+
+    .table-text {
+        font-size: 12px;
+    }
+
+    .table-text.sub {
+        font-size: 10px;
+    }
+}
+
+/* ========================================
+   VERY TALL SCREENS (19.5:9 and taller)
+   ======================================== */
+@media (max-aspect-ratio: 9/19.5) {
+    .game-table {
+        padding-top: 2vh;
+    }
+
+    .dealer-area {
+        margin-top: 3vh;
+    }
+
+    .player-area {
+        margin-bottom: 10vh;
+    }
+
+    .bet-stack {
+        bottom: 13vh;
+    }
+
+    .card {
+        width: 50px;
+        height: 70px;
+        margin-left: -25px;
+    }
+
+    .chip {
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+        font-size: 11px;
     }
 }

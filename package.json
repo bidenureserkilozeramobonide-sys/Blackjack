@@ -1,0 +1,30 @@
+{
+  "name": "spectral_blackjack_portable",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "powershell -Command \"Copy-Item -Path 'index.html','manifest.json' -Destination 'www\\' -Force; Copy-Item -Path 'css','js','Assets' -Destination 'www\\' -Recurse -Force\"",
+    "sync": "npm run build && npx cap sync android",
+    "android": "npx cap open android",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bidenureserkilozeramobonide-sys/Blackjack.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/bidenureserkilozeramobonide-sys/Blackjack/issues"
+  },
+  "homepage": "https://github.com/bidenureserkilozeramobonide-sys/Blackjack#readme",
+  "dependencies": {
+    "@capacitor-community/admob": "^8.0.0",
+    "@capacitor/android": "^8.0.1",
+    "@capacitor/cli": "^8.0.1",
+    "@capacitor/core": "^8.0.1"
+  }
+}

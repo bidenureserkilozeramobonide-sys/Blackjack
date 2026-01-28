@@ -629,22 +629,35 @@ button:active {
 .shop-tabs {
     display: flex;
     background: #25252d;
-    padding: 0 20px;
+    padding: 0 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE/Edge */
+}
+
+.shop-tabs::-webkit-scrollbar {
+    display: none;
+    /* Chrome/Safari */
 }
 
 /* Tabs Fix */
 .tab-btn {
-    flex: 1;
+    flex: 0 0 auto;
     background: transparent;
     box-shadow: none;
     /* Reset global button shadow */
     border-radius: 0;
     /* Reset global radius */
     border: none;
-    padding: 15px;
+    padding: 12px 16px;
     color: rgba(255, 255, 255, 0.5);
     font-weight: 700;
-    font-size: 14px;
+    font-size: 12px;
+    white-space: nowrap;
     border-bottom: 3px solid transparent;
     cursor: pointer;
     transition: all 0.2s;
